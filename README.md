@@ -38,7 +38,7 @@ forwarding from localhost. This could be replaced with TLS in the future, howeve
 First clone the project
 
 ```
-git clone git@github.com:McFacePunch/fido2-microservice-demo.git
+git clone --recursive git@github.com:McFacePunch/fido2-microservice-demo.git
 ```
 
 The git submodule is not needed in its entirety, so for simplicity I suggest 
