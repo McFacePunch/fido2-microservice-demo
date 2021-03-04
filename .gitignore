@@ -1,0 +1,9 @@
+venv/
+*.pyc
+setup.py
+.idea
+
+company.se*
+*.crt
+*.csr
+*.key
