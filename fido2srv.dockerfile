@@ -18,7 +18,8 @@ RUN apt-get update && apt-get install -y apache2 \
     libapache2-mod-wsgi-py3 \
     python3 \
     python-dev\
-    python3-pip &&\
+    python3-pip \
+    ssh &&\
     apt-get autoremove -y && apt-get clean
 
 # Upgrade pip3
@@ -54,15 +55,11 @@ COPY ./company.se.key /etc/apache2/ssl/company.se.key
 RUN a2dissite 000-default.conf
 RUN a2ensite apache-flask.conf
 
-# LINK apache config to docker logs.
-#RUN ln -sf /proc/self/fd/1 /var/log/apache2/access.log && \
-    #ln -sf /proc/self/fd/1 /var/log/apache2/error.log
-
 #RUN ssh forwarding of local port to remote port
 COPY fido2.key /home/
-RUN chmod 0600 /home/fido2.key
+RUN chmod 600 /home/fido2.key
 RUN chown srv:srv /home/fido2.key
-RUN ssh -i /home/fido2.key -L 127.0.0.1:6379:redis:6379 redis &
+RUN ssh -oStrictHostKeyChecking=no -L 6379:127.0.0.1:6379 sshuser@redis -i /home/fido2.key &
 
 EXPOSE 443
 
