@@ -27,7 +27,27 @@ services, especially in cloud environments.
 for production environments and can somewhat easily be enabled but makes the demo
   more complicated than desired.
   
-- 
+- Redis is being protected on the already isolated network via ssh port 
+forwarding from localhost. This could be replaced with TLS in the future, however
+  the consideration here was to enable easy revocation of certs in a zero trust 
+  environment thus allowing individual webservers/applications/nodes to easily have 
+  their session store access removed in case of an incident.
+
+### Getting Started
+
+First clone the project
+
+```
+git clone git@github.com:McFacePunch/fido2-microservice-demo.git
+```
+
+The git submodule is not needed in its entirety, so for simplicity I suggest 
+using a link to bring the files needed up to the root of the project.
+
+```
+cd fido2-microservice-demo
+ln -s ./python-fido2/examples/server ./srv
+```
 
 ### Runing containers
 
