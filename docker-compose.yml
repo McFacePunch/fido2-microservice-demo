@@ -1,0 +1,51 @@
+version: '2'
+
+services:
+  fido2:
+    build:
+      context: .
+      dockerfile: fido2srv.dockerfile
+    container_name: fido2
+    mem_limit: 512M
+    restart: "always"
+    depends_on:
+      - redis
+    networks:
+      - internal
+      - external
+    ports:
+      - "443:443"
+
+  web:
+    build:
+      context: .
+      dockerfile: Web.dockerfile
+    container_name: web
+    mem_limit: 512M
+    restart: "always"
+    depends_on:
+      - redis
+    networks:
+      - external
+      - internal
+    ports:
+      - "8080:443"
+
+  redis:
+    build:
+      context: .
+      dockerfile: redis.dockerfile
+    container_name: redis
+    mem_limit: 512M
+    restart: "always"
+    networks:
+      - internal
+#    ports:
+#      - "6379:6379"
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  external:
+    driver: bridge
