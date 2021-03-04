@@ -1,0 +1,12 @@
+Flask==1.0.2
+fido2
+cryptography
+flask-session-plus
+bcrypt
+
+
+pytz==2018.7
+requests==2.21.0
+twine==1.12.1
+wheel==0.32.3
+Click==7.0
