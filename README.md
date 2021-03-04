@@ -1,8 +1,8 @@
 # python-FIDO2 Demo dockerized as a microservice
 
 This project makes use of the yubico python-fido2 library and its demo along
-with some customizations to enable use of docker, apache and redis to create
-a POC microservice.
+with some customizations to enable use of docker, apache and redis together 
+in a POC microservice.
 
 ### Design
 
