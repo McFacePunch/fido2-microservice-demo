@@ -1,4 +1,5 @@
 venv/
+old/
 *.pyc
 setup.py
 .idea
@@ -7,3 +8,4 @@ company.se*
 *.crt
 *.csr
 *.key
+*.pub

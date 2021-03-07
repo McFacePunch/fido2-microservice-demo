@@ -1,67 +1,40 @@
-#by pawlrus
-#testing page to show distributed session management
+# by pawlrus
+# testing page to show session store use
 
 #! /usr/bin/python
 from __future__ import print_function, absolute_import, unicode_literals
 
-import sys
+import sys, os
 sys.path.append("/var/www/apache-flask")
 
-#from srv import server as srv_obj
-
-#application = srv_obj.app
-
-
 from flask import Flask, session, redirect, request
-from flask_session_plus import Session
 
-import os
+from redis import Redis
 
-# key + salt to encrypt cookies, could be redis stored or otherwise dynamic and shared
-bc_key = b"9D42A4E5-D713-4259-BFC2-406FEA141056"
-salt = b"1EECEEE9-10D3-4247-AB97-CD0BF19783C4"
 
 #flask init
 app = Flask(__name__, static_url_path="")
-app.secret_key = os.urandom(32)  # Used for session.
-#app.config['SESSION_TYPE'] = 'redis'
-#app.config['SESSION_REDIS'] = redis.from_url('127.0.0.1:6379')
-#hardware auth session
+app.secret_key = os.urandom(32)  # Used for local (to server) sessions
+
+#hardware webauth session
 cookiename = 'hwauth'
-app.config['SESSION_CONFIG'] = [
-    {
-        'cookie_name': cookiename,
-        'session_type': 'redis',
-        'cookie_secure': 'True',
-        'session_fields': ['user_id', 'user_data', '_id'],
-        'client': '127.0.0.1:6379',
-        'collection': 'sessions',
-    }]
-
-#Flask-session init
-session_store = Session()
-session_store.init_app(app)
-
-
-
-# Registered credentials are stored globally, in memory only. Single user
-# support, state is lost when the server terminates.
-credentials = []
-
+#rd = Redis(host='localhost', port=6379) # host= redis if tls, this is for ssh port forward
+rd = Redis(host='redis',
+                port=6379, db=0, ssl=True,
+                ssl_ca_certs='/etc/ca.crt')
 
 @app.route("/")
 def index():
     print(request.cookies)
     #does browser have cookie needed?
     if cookiename in request.cookies:
-        # get cookie value
-        cookie = request.cookies[cookiename]
+        cookie_val = request.cookies[cookiename]
         #is cookie in session store?
-        if cookie in session_store:
-            session = session_store[cookie]
-            data = session['data']
+        session_info = rd.hgetall(cookie_val)
+        if 'uid' and 'sid' and 'data' in session_info:
             print("Auth success!")
-            return 'Hello! Welcome to the secure page!\n'+data
+            data = session_info['data']
+            return 'Hello! Welcome to the secure page!\nData: '+data
     #get sessions from redis, if good then display stuff, fail redirect to other server
     else:
         # send no session to webauth server
@@ -72,11 +45,11 @@ def logout():
     print(request.cookies)
     #does browser have cookie needed?
     if cookiename in request.cookies:
-        #get cookie value
-        cookie = request.cookies[cookiename]
+        cookie_val = request.cookies[cookiename]
         #is cookie in session store?
-        if cookie in session_store:
-            session.pop(cookie, None)
+        session_info = rd.hgetall(cookie_val)
+        if 'uid' and 'sid' and 'data' in session_info:
+            rd.hdel(cookie_val)
             print("Logout success!")
             return "Logout complete!"
         else:

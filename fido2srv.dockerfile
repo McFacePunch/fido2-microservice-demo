@@ -51,15 +51,16 @@ COPY ./${HOME} /var/www/apache-flask/srv/
 #copy over certs
 COPY ./company.se.crt /etc/apache2/ssl/company.se.crt
 COPY ./company.se.key /etc/apache2/ssl/company.se.key
+COPY tests/tls/ca.crt /etc/ca.crt
 
 RUN a2dissite 000-default.conf
 RUN a2ensite apache-flask.conf
 
 #RUN ssh forwarding of local port to remote port
-COPY fido2.key /home/
-RUN chmod 600 /home/fido2.key
-RUN chown srv:srv /home/fido2.key
-RUN ssh -oStrictHostKeyChecking=no -L 6379:127.0.0.1:6379 sshuser@redis -i /home/fido2.key &
+#COPY fido2.key /home/
+#RUN chmod 600 /home/fido2.key
+#RUN chown srv:srv /home/fido2.key
+#RUN ssh -oStrictHostKeyChecking=no -L 6379:127.0.0.1:6379 sshuser@redis -i /home/fido2.key -N &
 
 EXPOSE 443
 
@@ -75,4 +76,5 @@ WORKDIR /var/www/apache-flask
 
 CMD  /usr/sbin/apache2ctl -D FOREGROUND
 
-#ENTRYPOINT ["python", "/srv/fido2.py"]
+#COPY sshf.sh sshf.sh
+#ENTRYPOINT sh ./sshf.sh

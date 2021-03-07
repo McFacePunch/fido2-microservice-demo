@@ -21,8 +21,6 @@ RUN apt-get update && apt-get install -y apache2 \
     python3-pip \
     ssh &&\
     apt-get autoremove -y && apt-get clean
-    #build-essential \
-    #libapache2-mod-wsgi \
 
 # Upgrade pip3
 RUN pip3 install --upgrade pip
@@ -48,18 +46,18 @@ COPY ./auth-page.wsgi /var/www/apache-flask/apache-flask.wsgi
 #copy over certs
 COPY ./company.se.crt /etc/apache2/ssl/company.se.crt
 COPY ./company.se.key /etc/apache2/ssl/company.se.key
+COPY tests/tls/ca.crt /etc/ca.crt
 
 RUN a2dissite 000-default.conf
 RUN a2ensite apache-flask.conf
 
 #RUN ssh forwarding of local port to remote port
-COPY web.key /home/
-RUN chmod 600 /home/web.key
-RUN chown srv:srv /home/web.key
-RUN ssh -oStrictHostKeyChecking=no -L 6379:127.0.0.1:6379 sshuser@redis -i /home/web.key -N &
-#RUN ssh -oStrictHostKeyChecking=no -i /home/web.key -L 127.0.0.1:6379:redis:6379 redis &
+#COPY web.key /home/
+#RUN chmod 600 /home/web.key
+#RUN chown srv:srv /home/web.key
+#RUN ssh -oStrictHostKeyChecking=no -L 6379:127.0.0.1:6379 sshuser@redis -i /home/web.key -N &
 
-EXPOSE 443
+#EXPOSE 443
 
 # Drop root and change ownership of the application folder to the application user
 RUN chown -R ${USER_ID}:${GROUP_ID} ${HOME}
@@ -72,3 +70,7 @@ RUN chown -R ${USER_ID}:${GROUP_ID} /var/log/apache2/access.log
 WORKDIR /var/www/apache-flask
 
 CMD  /usr/sbin/apache2ctl -D FOREGROUND
+
+##ssh
+#COPY sshw.sh sshw.sh
+#ENTRYPOINT sh ./sshw.sh

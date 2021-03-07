@@ -1,7 +1,7 @@
 Flask==1.0.2
 fido2
 cryptography
-flask-session-plus
+redis
 bcrypt
 
 

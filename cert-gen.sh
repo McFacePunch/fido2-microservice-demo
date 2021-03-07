@@ -25,7 +25,7 @@ rm -rf company.se*
 #  -addext "extendedKeyUsage = serverAuth"
 
 #macos versions
-#fido2 and web certs
+#fido2 and web server certs
 openssl req \
   -newkey rsa:4096 \
   -x509 \
@@ -56,8 +56,11 @@ openssl req \
 #  -days 365
 
 #redis port forward ssh keys
-ssh-keygen -b 4096 -t rsa -f ./fido2.key -q -N ""
-ssh-keygen -b 4096 -t rsa -f ./web.key -q -N ""
+#ssh-keygen -b 4096 -t rsa -f ./fido2.key -q -N ""
+#ssh-keygen -b 4096 -t rsa -f ./web.key -q -N ""
+
+#generate redis certs
+bash gen-redis-crts.sh
 
 #make cert
 #openssl x509 -req -days 365 -in company.se.csr -signkey company.se.key -out company.se.crt

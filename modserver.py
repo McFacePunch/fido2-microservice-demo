@@ -1,4 +1,4 @@
-#modified by pawlrus for redis sessions
+# modified by pawlrus for redis sessions
 # Copyright (c) 2018 Yubico AB
 # All rights reserved.
 #
@@ -43,48 +43,30 @@ from fido2.ctap2 import AttestationObject, AuthenticatorData
 from fido2 import cbor
 from flask import Flask, session, request, redirect, abort, make_response
 
-from flask_session_plus import Session
+from redis import Redis
 
 import bcrypt as bc
 
-#import redis
+# import redis
 
 import os
 
-# key + salt to encrypt cookies, could be redis stored or otherwise dynamic and shared
-bc_key = b"9D42A4E5-D713-4259-BFC2-406FEA141056"
-salt = b"1EECEEE9-10D3-4247-AB97-CD0BF19783C4"
-
-#flask init
+# flask init
 app = Flask(__name__, static_url_path="")
-app.secret_key = os.urandom(32)  # Used for session.
-#app.config['SESSION_TYPE'] = 'redis'
-#app.config['SESSION_REDIS'] = redis.from_url('127.0.0.1:6379')
-#hardware auth session
+app.secret_key = os.urandom(32)  # Used for local (to server) sessions
+
+# hardware webauth session
 cookiename = 'hwauth'
-app.config['SESSION_CONFIG'] = [
-    {
-        'cookie_name': cookiename,
-        'session_type': 'redis',
-        'cookie_secure': 'True',
-        'session_fields': ['user_id', 'user_data', '_id'],
-        'client': '127.0.0.1:6379',
-        'collection': 'sessions',
-    }]
+#rd = Redis(host='localhost', port=6379)  # host= redis if tls, this is for ssh port forward
 
-#Flask-session init
-session_store = Session()
-session_store.init_app(app)
-
-#https alternative
-# r = redis.Redis(host='xxxxxx.cache.amazonaws.com', port=6379, db=0,
-#                     ssl=True,
-#                     ssl_ca_certs='/etc/ssl/certs/ca-certificates.crt')
+# redis https setup
+rd = Redis(host='redis',
+                port=6379, db=0, ssl=True,
+                ssl_ca_certs='/etc/ca.crt')
 
 
 rp = PublicKeyCredentialRpEntity("localhost", "Demo server")
 server = Fido2Server(rp)
-
 
 # Registered credentials are stored globally, in memory only. Single user
 # support, state is lost when the server terminates.
@@ -96,13 +78,14 @@ def index():
     print(request.cookies)
     #does browser have cookie needed?
     if cookiename in request.cookies:
-        # get cookie value
-        cookie = request.cookies[cookiename]
+        cookie_val = request.cookies[cookiename]
         #is cookie in session store?
-        if cookie in session_store:
-            #auth complete move user to 2nd server
+        session_info = rd.hgetall(cookie_val)
+        if 'uid' and 'sid' and 'data' in session_info:
+            print("Auth success!")
+            # auth complete move user to 2nd server
             return redirect("https://localhost:8080", code=302)
-    #get sessions from redis, if good then display stuff, fail redirect to other server
+    # get sessions from redis, if good then display stuff, fail redirect to other server
     else:
         # send user to webauth page
         return redirect("/index.html")
@@ -177,14 +160,20 @@ def authenticate_complete():
     )
     print("ASSERTION OK")
 
-    #add sesession code here for successful
-    cookie = os.urandom(32)
-    session_info = {'uid': os.urandom(32), 'sid': os.urandom(12), 'data' : 'cant touch this, ba nanana'}
-    session_store[cookie] = session_info
+    # add sesession code here for successful
+    # build cookie, set cookie data in redis, send cookie name to client
+    cookie_val = os.urandom(32)
+    session_info = {'uid': os.urandom(32), 'sid': os.urandom(12), 'data': 'cant touch this, ba nanana'}
+
+    #send session to redis
+    rd.hmset(cookie_val, session_info)
+    rd.expire(cookie_val, 300) # 5 min cookie timout
+
     resp = make_response(redirect("https://localhost:8080", code=302))
-    resp.set_cookie(session_store[cookiename])
+    resp.set_cookie({cookiename: cookie_val})
 
     return cbor.encode({"status": "OK"})
+
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -193,9 +182,10 @@ def page_not_found(e):
     # your processing here
     return 'Error 404'
 
+
 @app.errorhandler(500)
 def page_not_found(e):
-    if request.path.startswith ('api') or request.path.startswith('authen') or request.path.startswith('index'):
+    if request.path.startswith('api') or request.path.startswith('authen') or request.path.startswith('index'):
         abort(500)
     # your processing here
     return 'Error 404'
