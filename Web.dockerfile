@@ -40,8 +40,9 @@ RUN a2enmod ssl
 COPY ./apache-flask.conf /etc/apache2/sites-available/apache-flask.conf
 RUN a2ensite apache-flask
 
-# Copy over the wsgi file
+# Copy over the wsgi & html files
 COPY ./auth-page.wsgi /var/www/apache-flask/apache-flask.wsgi
+COPY ./win.html /var/www/apache-flask/
 
 #copy over certs
 COPY ./company.se.crt /etc/apache2/ssl/company.se.crt

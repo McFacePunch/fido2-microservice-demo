@@ -45,6 +45,8 @@ from flask import Flask, session, request, redirect, abort, make_response
 
 from redis import Redis
 
+import base64
+
 import bcrypt as bc
 
 # import redis
@@ -60,9 +62,8 @@ cookiename = 'hwauth'
 #rd = Redis(host='localhost', port=6379)  # host= redis if tls, this is for ssh port forward
 
 # redis https setup
-rd = Redis(host='redis',
-                port=6379, db=0, ssl=True,
-                ssl_ca_certs='/etc/ca.crt')
+rd = Redis(host='redis',port=6379) #db=0, ssl=True,
+                #ssl_ca_certs='/etc/ca.crt')
 
 
 rp = PublicKeyCredentialRpEntity("localhost", "Demo server")
@@ -81,10 +82,15 @@ def index():
         cookie_val = request.cookies[cookiename]
         #is cookie in session store?
         session_info = rd.hgetall(cookie_val)
-        if 'uid' and 'sid' and 'data' in session_info:
+        print(session_info)
+        if b'uid' and b'sid' and b'data' in session_info:
             print("Auth success!")
             # auth complete move user to 2nd server
-            return redirect("https://localhost:8080", code=302)
+            return redirect("https://localhost:8080", code=301)
+        else:
+            # send no session/expired to webauth server
+            return redirect("/index.html")
+
     # get sessions from redis, if good then display stuff, fail redirect to other server
     else:
         # send user to webauth page
@@ -160,37 +166,47 @@ def authenticate_complete():
     )
     print("ASSERTION OK")
 
+    return cbor.encode({"status": "OK"})
+
+@app.route("/assign_cookie",methods = ['POST', 'GET'])
+def assign_cookie():
+    print(request.cookies)
     # add sesession code here for successful
     # build cookie, set cookie data in redis, send cookie name to client
     cookie_val = os.urandom(32)
     session_info = {'uid': os.urandom(32), 'sid': os.urandom(12), 'data': 'cant touch this, ba nanana'}
 
+    b64cookie = base64.b64encode(cookie_val)
+
     #send session to redis
-    rd.hmset(cookie_val, session_info)
-    rd.expire(cookie_val, 300) # 5 min cookie timout
+    rd.hmset(b64cookie, session_info)
+    rd.expire(b64cookie, 300) # 5 min cookie timout
 
-    resp = make_response(redirect("https://localhost:8080", code=302))
-    resp.set_cookie({cookiename: cookie_val})
+    #session[cookiename] = base64.b64encode(cookie_val)
+    resp = make_response(redirect("https://localhost:8080", code=301))
+    resp.set_cookie(cookiename, b64cookie)
+    return resp
+    #resp = make_response(redirect("https://localhost:8080", code=302))
+    #resp.set_cookie(cookiename, base64.b64encode(cookie_val))
+    #resp.set_cookie({cookiename: cookie_val})
+    #return redirect("https://localhost:8080", code=302)
 
-    return cbor.encode({"status": "OK"})
-
-
-@app.errorhandler(404)
-def page_not_found(e):
-    if request.path.startswith('api') or request.path.startswith('authen') or request.path.startswith('index'):
-        abort(404)
-    # your processing here
-    return 'Error 404'
-
-
-@app.errorhandler(500)
-def page_not_found(e):
-    if request.path.startswith('api') or request.path.startswith('authen') or request.path.startswith('index'):
-        abort(500)
-    # your processing here
-    return 'Error 404'
+# @app.errorhandler(404)
+# def page_not_found(e):
+#     if request.path.startswith('api') or request.path.startswith('authen') or request.path.startswith('index'):
+#         abort(404)
+#     # your processing here
+#     return 'Error 404'
+#
+#
+# @app.errorhandler(500)
+# def page_not_found(e):
+#     if request.path.startswith('api') or request.path.startswith('authen') or request.path.startswith('index'):
+#         abort(500)
+#     # your processing here
+#     return 'Error 404'
 
 
 if __name__ == "__main__":
     print(__doc__)
-    app.run(ssl_context="adhoc", debug=False)
+    app.run(ssl_context="adhoc", debug=True)

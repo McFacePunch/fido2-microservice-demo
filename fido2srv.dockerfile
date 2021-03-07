@@ -63,6 +63,7 @@ RUN a2ensite apache-flask.conf
 #RUN ssh -oStrictHostKeyChecking=no -L 6379:127.0.0.1:6379 sshuser@redis -i /home/fido2.key -N &
 
 EXPOSE 443
+EXPOSE 5000
 
 # Drop root and change ownership of the application folder to the application user
 RUN chown -R ${USER_ID}:${GROUP_ID} ${HOME}

@@ -19,26 +19,33 @@ app.secret_key = os.urandom(32)  # Used for local (to server) sessions
 #hardware webauth session
 cookiename = 'hwauth'
 #rd = Redis(host='localhost', port=6379) # host= redis if tls, this is for ssh port forward
-rd = Redis(host='redis',
-                port=6379, db=0, ssl=True,
-                ssl_ca_certs='/etc/ca.crt')
+rd = Redis(host='redis',port=6379)#, db=0, ssl=True,
+                #ssl_ca_certs='/etc/ca.crt')
 
 @app.route("/")
 def index():
     print(request.cookies)
+    #print(session[cookiename])
     #does browser have cookie needed?
     if cookiename in request.cookies:
         cookie_val = request.cookies[cookiename]
         #is cookie in session store?
         session_info = rd.hgetall(cookie_val)
-        if 'uid' and 'sid' and 'data' in session_info:
+        print(session_info)
+        if b'uid' and b'sid' and b'data' in session_info:
             print("Auth success!")
             data = session_info['data']
-            return 'Hello! Welcome to the secure page!\nData: '+data
+            resp = make_response(redirect("https://localhost:8080", code=301))
+            resp.set_cookie(cookiename, b64cookie)
+            with open("win.html","r") as f: return f
+            #return 'Hello! Welcome to the secure page!\nData: '+data
+        else:
+            # send no session/expired to webauth server
+            return redirect("https://localhost:443/", code=301)
     #get sessions from redis, if good then display stuff, fail redirect to other server
     else:
         # send no session to webauth server
-        return redirect("https://localhost", code=302)
+        return redirect("https://localhost:443/", code=301)
 
 @app.route("/logout")
 def logout():
@@ -48,8 +55,10 @@ def logout():
         cookie_val = request.cookies[cookiename]
         #is cookie in session store?
         session_info = rd.hgetall(cookie_val)
-        if 'uid' and 'sid' and 'data' in session_info:
+        print(session_info)
+        if b'uid' and b'sid' and b'data' in session_info:
             rd.hdel(cookie_val)
+            # resp.delete_cookie('username')
             print("Logout success!")
             return "Logout complete!"
         else:
