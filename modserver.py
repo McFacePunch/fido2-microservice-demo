@@ -186,14 +186,12 @@ def assign_cookie():
     resp = make_response(redirect("https://localhost:8080", code=301))
     resp.set_cookie(cookiename, b64cookie)
     return resp
-    #resp = make_response(redirect("https://localhost:8080", code=302))
-    #resp.set_cookie(cookiename, base64.b64encode(cookie_val))
-    #resp.set_cookie({cookiename: cookie_val})
-    #return redirect("https://localhost:8080", code=302)
+
 
 # @app.errorhandler(404)
 # def page_not_found(e):
-#     if request.path.startswith('api') or request.path.startswith('authen') or request.path.startswith('index'):
+#     print(e)
+#     if request.path.startswith('api') or request.path.startswith('/api') or request.path.startswith('authen') or request.path.startswith('index'):
 #         abort(404)
 #     # your processing here
 #     return 'Error 404'
@@ -201,7 +199,8 @@ def assign_cookie():
 #
 # @app.errorhandler(500)
 # def page_not_found(e):
-#     if request.path.startswith('api') or request.path.startswith('authen') or request.path.startswith('index'):
+#     print(e)
+#     if request.path.startswith('api') or request.path.startswith('/api') or request.path.startswith('authen') or request.path.startswith('index'):
 #         abort(500)
 #     # your processing here
 #     return 'Error 404'
