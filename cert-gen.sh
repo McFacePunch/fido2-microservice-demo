@@ -33,10 +33,10 @@ openssl req \
   -keyout company.se.key \
   -new \
   -out company.se.crt \
-  -subj "/C=SE/ST=Stockholm Lan/L=Stockholm/O=Company AB/OU=DevOps/CN=www.company.se/emailAddress=dev@www.company.se" \
+  -subj "/C=SE/ST=Stockholm Lan/L=Stockholm/O=Company AB/OU=DevOps/CN=security-engineer.test/emailAddress=dev@security-engineer.test" \
   -extensions v3_new \
   -config <(cat /System/Library/OpenSSL/openssl.cnf \
-  <(printf '[v3_new]\nsubjectAltName=DNS:company.se,IP:127.0.0.1,IP:192.168.1.1\nextendedKeyUsage=serverAuth')) \
+  <(printf '[v3_new]\nsubjectAltName=DNS:security-engineer.test,IP:127.0.0.1,IP:192.168.1.1\nextendedKeyUsage=serverAuth')) \
   -sha256 \
   -days 365
 

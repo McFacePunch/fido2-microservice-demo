@@ -27,11 +27,21 @@ services, especially in cloud environments.
 for production environments and can somewhat easily be enabled but makes the demo
   more complicated than desired.
   
-- Redis is being protected on the already isolated network via ssh port 
-forwarding from localhost. This could be replaced with TLS in the future, however
-  the consideration here was to enable easy revocation of certs in a zero trust 
-  environment thus allowing individual webservers/applications/nodes to easily have 
-  their session store access removed in case of an incident.
+### Secutiy
+
+- Currently the containers make use of customer certs, a proper CA and signing would be a good improvement.
+
+- The containers all make use of TLS with a restrictive cipher set that leans towards compatibility.
+
+- For deployment and testing I would suggest also adding Anchor, BlackDuck or similar static analysis tooling for
+  detection of known CVEs as they come up to make sure between builds the container is getting checked.
+  
+- Each system and its service logs to stderr currently but for production that should be changed to syslog or similar
+  and the org's log servers should be configured to make sure they dont just sit in the container
+  
+- when updating sources, especially dealing with the web applications and chaning their interfaces there should
+  be an additional revivew of how that might impact things. For example if adding new login handling it shoudle be 
+  evaluated to not cause a bypass for other methods.
 
 ### Getting Started
 
