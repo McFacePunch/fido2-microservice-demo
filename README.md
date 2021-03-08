@@ -61,14 +61,6 @@ ln -s ./python-fido2/examples/server ./srv
 
 ### Runing containers
 
-There is a makefile provided to automation for local testing, like cleaning of .pyc 
-files and other build/hygine needs. This is mostly for ease of use when testing
-locally and can be ignored.
-```
-make clean && make build
-make test
-```
-
 To run build the containers there are two options, first it can be done with the
 `run.sh` script which automatically deletes old files before begining, or second
 it can be done mannually by running the `cert-gen.sh` script to produce needed
