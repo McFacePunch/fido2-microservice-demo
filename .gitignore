@@ -3,6 +3,9 @@ old/
 *.pyc
 setup.py
 .idea
+tests/
+srv/
+python-fido2/
 
 company.se*
 *.crt

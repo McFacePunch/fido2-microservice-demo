@@ -38,14 +38,14 @@ RUN a2enmod ssl
 #RUN a2enmod auth_digest
 
 # Copy over the apache configuration file and enable the site
-COPY ./apache-flask.conf /etc/apache2/sites-available/apache-flask.conf
+COPY configs/apache-flask.conf /etc/apache2/sites-available/apache-flask.conf
 RUN a2ensite apache-flask
 
 # Copy over the wsgi files
-COPY ./apache-flask.wsgi /var/www/apache-flask/apache-flask.wsgi
+COPY code/apache-flask.wsgi /var/www/apache-flask/apache-flask.wsgi
 
-COPY ./modserver.py /var/www/apache-flask/srv/
-COPY ./__init__.py /var/www/apache-flask/srv/
+COPY code/modserver.py /var/www/apache-flask/srv/
+COPY code/__init__.py /var/www/apache-flask/srv/
 COPY ./${HOME} /var/www/apache-flask/srv/
 
 #copy over certs

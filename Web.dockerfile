@@ -37,11 +37,11 @@ RUN a2enmod headers
 RUN a2enmod ssl
 
 # Copy over the apache configuration file and enable the site
-COPY ./apache-flask.conf /etc/apache2/sites-available/apache-flask.conf
+COPY configs/apache-flask.conf /etc/apache2/sites-available/apache-flask.conf
 RUN a2ensite apache-flask
 
 # Copy over the wsgi & html files
-COPY ./auth-page.wsgi /var/www/apache-flask/apache-flask.wsgi
+COPY code/auth-page.wsgi /var/www/apache-flask/apache-flask.wsgi
 COPY ./win.html /var/www/apache-flask/
 
 #copy over certs
