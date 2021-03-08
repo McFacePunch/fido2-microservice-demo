@@ -56,15 +56,6 @@ COPY tests/tls/ca.crt /etc/ca.crt
 RUN a2dissite 000-default.conf
 RUN a2ensite apache-flask.conf
 
-#RUN ssh forwarding of local port to remote port
-#COPY fido2.key /home/
-#RUN chmod 600 /home/fido2.key
-#RUN chown srv:srv /home/fido2.key
-#RUN ssh -oStrictHostKeyChecking=no -L 6379:127.0.0.1:6379 sshuser@redis -i /home/fido2.key -N &
-
-EXPOSE 443
-EXPOSE 5000
-
 # Drop root and change ownership of the application folder to the application user
 RUN chown -R ${USER_ID}:${GROUP_ID} ${HOME}
 RUN chown -R ${USER_ID}:${GROUP_ID} /var/log/apache2
@@ -76,6 +67,3 @@ RUN chown -R ${USER_ID}:${GROUP_ID} /var/log/apache2/access.log
 WORKDIR /var/www/apache-flask
 
 CMD  /usr/sbin/apache2ctl -D FOREGROUND
-
-#COPY sshf.sh sshf.sh
-#ENTRYPOINT sh ./sshf.sh

@@ -188,24 +188,6 @@ def assign_cookie():
     return resp
 
 
-# @app.errorhandler(404)
-# def page_not_found(e):
-#     print(e)
-#     if request.path.startswith('api') or request.path.startswith('/api') or request.path.startswith('authen') or request.path.startswith('index'):
-#         abort(404)
-#     # your processing here
-#     return 'Error 404'
-#
-#
-# @app.errorhandler(500)
-# def page_not_found(e):
-#     print(e)
-#     if request.path.startswith('api') or request.path.startswith('/api') or request.path.startswith('authen') or request.path.startswith('index'):
-#         abort(500)
-#     # your processing here
-#     return 'Error 404'
-
-
 if __name__ == "__main__":
     print(__doc__)
     app.run(ssl_context="adhoc", debug=True)

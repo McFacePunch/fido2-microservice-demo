@@ -42,7 +42,7 @@ RUN a2ensite apache-flask
 
 # Copy over the wsgi & html files
 COPY code/auth-page.wsgi /var/www/apache-flask/apache-flask.wsgi
-COPY ./win.html /var/www/apache-flask/
+#COPY ./win.html /var/www/apache-flask/
 
 #copy over certs
 COPY ./company.se.crt /etc/apache2/ssl/company.se.crt
@@ -52,13 +52,6 @@ COPY tests/tls/ca.crt /etc/ca.crt
 RUN a2dissite 000-default.conf
 RUN a2ensite apache-flask.conf
 
-#RUN ssh forwarding of local port to remote port
-#COPY web.key /home/
-#RUN chmod 600 /home/web.key
-#RUN chown srv:srv /home/web.key
-#RUN ssh -oStrictHostKeyChecking=no -L 6379:127.0.0.1:6379 sshuser@redis -i /home/web.key -N &
-
-#EXPOSE 443
 
 # Drop root and change ownership of the application folder to the application user
 RUN chown -R ${USER_ID}:${GROUP_ID} ${HOME}
@@ -72,6 +65,3 @@ WORKDIR /var/www/apache-flask
 
 CMD  /usr/sbin/apache2ctl -D FOREGROUND
 
-##ssh
-#COPY sshw.sh sshw.sh
-#ENTRYPOINT sh ./sshw.sh

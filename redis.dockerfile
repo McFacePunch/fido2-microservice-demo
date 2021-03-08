@@ -45,11 +45,6 @@ RUN mkdir /ch
 #RUN chmod 600 /home/${USER}/.ssh/authorized_keys
 #RUN chown ${USER}:${USER} /home/${USER}/.ssh/authorized_keys
 
-#RUN rc-update add sshd
-#RUN /etc/init.d/sshd start
-#CMD ["/usr/sbin/sshd"]
-#CMD ["/usr/sbin/sshd", "-D", "-e"]
-#RUN /usr/sbin/sshd &
 
 #redis config, bind to localhost only since usig ssh forwarding
 COPY tests/tls tls
@@ -62,26 +57,6 @@ RUN echo "tls-cert-file /data/tls/redis.crt" >> /etc/redis/redis.conf
 RUN echo "tls-key-file /data/tls/redis.key" >> /etc/redis/redis.conf
 RUN echo "tls-ca-cert-file /data/tls/ca.crt" >> /etc/redis/redis.conf
 RUN echo "tls-dh-params-file /data/tls/redis.dh" >> /etc/redis/redis.conf
-#CMD ["redis-cli", "config", "set", "bind", "localhost"]
 
-#COPY gen-redis-crts.sh gen-redis-crts.sh
-#RUN sh -c gen-redis-crts.sh
 
-#jankey method for running multiple services at init......
-#RUN redis-server /etc/redis/redis.conf
-#VOLUME ["/sys/fs/cgroup" ]
-#COPY sshd.sh sshd.sh
-#RUN chmod +x sshd.sh
-#COPY proc.sh proc.sh
-#CMD sh ./proc.sh
-
-#COPY supervisord.conf /etc/supervisord.conf
-#CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 CMD redis-server /etc/redis/redis.conf
-#ENTRYPOINT sh ./sshd.sh
-#ENTRYPOINT ["sh","-c", "rc-status; rc-service sshd start"]
-#ENTRYPOINT redis-server /etc/redis/redis.conf && /usr/sbin/sshd -D -e
-#ENTRYPOINT /usr/sbin/sshd -D -e
-#ENTRYPOINT ["sh","-c", "/usr/sbin/sshd", "-D", "-e"]
-#RUN redis-cli config set bind localhost
-#127.0.0.1
